@@ -1,0 +1,31 @@
+{
+  "name": "express-antiflood",
+  "version": "1.0.0",
+  "description": "An antiflood middleware for Express",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fcmatteo/express-antiflood.git"
+  },
+  "keywords": [
+    "antiflood",
+    "express"
+  ],
+  "author": "Facundo Matteo <facundo.matteo@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fcmatteo/express-antiflood/issues"
+  },
+  "homepage": "https://github.com/fcmatteo/express-antiflood#readme",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-transform-object-rest-spread": "^6.20.2",
+    "babel-preset-latest": "^6.16.0",
+    "eslint": "^3.13.1",
+    "eslint-config-airbnb-base": "^11.0.1",
+    "eslint-plugin-import": "^2.2.0"
+  }
+}
