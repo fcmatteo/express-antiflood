@@ -1,25 +1,8 @@
 import crypto from 'crypto'
+import defaults from './defaults'
 
 function hash(value) {
   return crypto.createHash('sha256').update(String(value)).digest('base64')
-}
-
-function failCallbackDefault(req, res, next, nextValidRequestDate) {
-  res.status(429);
-  res.send({
-    error: {
-      text: 'Too many requests.',
-      nextValidRequestDate,
-    },
-  })
-}
-
-const defaults = {
-  timeLimit: 60000,
-  timeBlocked: 5 * 60000,
-  tries: 10,
-  prefix: '',
-  failCallback: failCallbackDefault,
 }
 
 export default function (store, options, key) {
