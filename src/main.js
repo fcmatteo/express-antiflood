@@ -17,11 +17,17 @@ export default function (store, options, key) {
 
     const storeKey = `${prefix}${hash(key || req.ip)}`
     const value = store.get(storeKey)
+    if (!value) {
+      store.set(storeKey, 1, timeLimit)
+      next()
+      return
+    }
     const nextValidRequestDate = value.nextDate
-    const nextCount = value.count + 1 || 1
+    const nextCount = value.count + 1
 
     if (value.count >= tries) {
       failCallback(req, res, next, nextValidRequestDate)
+      return
     }
 
     if (nextCount === tries) {
