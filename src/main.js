@@ -21,16 +21,8 @@ const defaults = {
   prefix: '',
   failCallback: failCallbackDefault,
 }
-const globalDefaults = {
-  prefix: 'global',
-  blocksLimit: 10,
-  timeLimit: 30 * 60000,
-  timeBlocked: 60 * 60000,
-  resetTimeOnRetry: false, // If true, each retry will cause block time to start counting from zero
-  failCallback: failCallbackDefault,
-}
 
-export default function (store, options, key, globalOptions) {
+export default function (store, options, key) {
   return (req, res, next) => {
     const {
       timeLimit,
@@ -45,31 +37,6 @@ export default function (store, options, key, globalOptions) {
     const nextValidRequestDate = value.nextDate
     const nextCount = value.count + 1 || 1
 
-    if (globalOptions) {
-      const {
-        timeLimit: globalTimeLimit,
-        timeBlocked: globalTimeBlocked,
-        blocksLimit,
-        prefix: globalPrefix,
-        resetTimeOnRetry,
-        failCallback: globalFailCallback,
-      } = { ...globalDefaults, ...globalOptions }
-
-      const globalKey = `${globalPrefix}${hash(req.ip)}`
-      const blocks = store.countElementsGlobal(globalKey)
-
-      if (blocks >= blocksLimit) {
-        globalFailCallback(req, res, next, nextValidRequestDate)
-      }
-      if (nextCount === tries) {
-        if (blocks + 1 >= blocksLimit) {
-          store.addToGlobal(globalKey, storeKey, globalTimeBlocked, resetTimeOnRetry)
-        } else {
-          store.addToGlobal(globalKey, storeKey, globalTimeLimit, resetTimeOnRetry)
-        }
-      }
-    }
-
     if (value.count >= tries) {
       failCallback(req, res, next, nextValidRequestDate)
     }
@@ -83,9 +50,8 @@ export default function (store, options, key, globalOptions) {
   }
 }
 
-export const MemoryStore = function () {
+export function MemoryStore() {
   const localStore = {}
-  const globalStore = {} // globalStore[key] = { timeout: Number, blocked: Set }
   return {
     get(key) {
       // returns a value from the local store
@@ -96,21 +62,6 @@ export const MemoryStore = function () {
       clearTimeout(localStore[key].timeout)
       const timeout = setTimeout(() => { delete localStore[key] }, expire)
       localStore[key] = { count, timeout }
-    },
-    addToGlobal(key, localKey, expire, resetIfExists) {
-      // adds an element to a set of keys (from the local store) in the global store
-      if (!globalStore[key]) {
-        globalStore[key] = { blocked: new Set() }
-      }
-      if (!globalStore[key].blocked.has(key) || resetIfExists) {
-        clearTimeout(globalStore[key].timeout)
-        globalStore[key].timeout = setTimeout(() => { delete globalStore[key] }, expire)
-      }
-      globalStore[key].blocked.add(key)
-    },
-    countElementsGlobal(key) {
-      // returns the number of blocks for that key
-      return globalStore[key].blocked.size
     },
   }
 }
