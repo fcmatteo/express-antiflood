@@ -43,14 +43,21 @@ export function MemoryStore() {
   const localStore = {}
   return {
     get(key) {
-      // returns a value from the local store
-      return localStore[key]
+      // returns a value from the store
+      const elem = localStore[key]
+      return elem && {
+        count: elem.count,
+        nextDate: elem.nextDate,
+      }
     },
     set(key, count, expire) {
-      // adds an element to the local store
-      clearTimeout(localStore[key].timeout)
+      // adds an element to the store
+      if (localStore[key]) {
+        clearTimeout(localStore[key].timeout)
+      }
+      const nextDate = (new Date()).getTime() + expire;
       const timeout = setTimeout(() => { delete localStore[key] }, expire)
-      localStore[key] = { count, timeout }
+      localStore[key] = { count, timeout, nextDate }
     },
   }
 }
