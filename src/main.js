@@ -5,18 +5,24 @@ function hash(value) {
   return crypto.createHash('sha256').update(String(value)).digest('base64')
 }
 
-export default function (store, options, key) {
+export default function (store, options, key, extension) {
   return (req, res, next) => {
+    const mergedOptions = { ...defaults, ...options }
     const {
       timeLimit,
       timeBlocked,
       tries,
       prefix,
       failCallback,
-    } = { ...defaults, ...options }
+    } = mergedOptions
 
     const storeKey = `${prefix}${hash(key || req.ip)}`
     const value = store.get(storeKey)
+
+    if (extension) {
+      extension(mergedOptions, value)
+    }
+
     if (!value) {
       store.set(storeKey, 1, timeLimit)
       next()
