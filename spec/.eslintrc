@@ -7,6 +7,7 @@
     "expect": true
   },
   "rules": {
-    "no-unused-expressions": 0
+    "no-unused-expressions": 0,
+    "no-await-in-loop": 0
   }
 }

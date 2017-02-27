@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 import chai from 'chai'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
@@ -31,20 +32,20 @@ describe('Antiflood middleware basic tests', () => {
     defaults.failCallback = sinon.stub()
   })
 
-  it('should return a middleware', () => {
+  it('should return a middleware', async () => {
     middleware.should.be.a('function')
-    middleware(req, res, next)
+    await middleware(req, res, next)
     next.should.have.been.calledOnce
   })
 
-  it(`should block a user that does the request ${defaults.tries} times`, () => {
+  it(`should block a user that does the request ${defaults.tries} times`, async () => {
     defaults.failCallback = sinon.stub()
     for (let i = 0; i < defaults.tries; i += 1) {
-      middleware(req, res, next)
+      await middleware(req, res, next)
     }
     next.callCount.should.be.equal(10)
-    middleware(req, res, next)
-    middleware(req, res, next)
+    await middleware(req, res, next)
+    await middleware(req, res, next)
     next.callCount.should.be.equal(10)
     defaults.failCallback.should.have.been.calledTwice
   })
@@ -65,30 +66,30 @@ describe('Antiflood middleware times', () => {
   })
   afterEach(() => clock.restore())
 
-  it(`should not block a user that does the request ${defaults.tries} times but ${defaults.timeLimit}ms elapsed`, () => {
+  it(`should not block a user that does the request ${defaults.tries} times but ${defaults.timeLimit}ms elapsed`, async () => {
     for (let i = 0; i < defaults.tries - 1; i += 1) {
-      middleware(req, res, next)
+      await middleware(req, res, next)
     }
     next.callCount.should.be.equal(9)
     clock.tick(defaults.timeLimit)
-    middleware(req, res, next)
-    middleware(req, res, next)
-    middleware(req, res, next)
+    await middleware(req, res, next)
+    await middleware(req, res, next)
+    await middleware(req, res, next)
     next.callCount.should.be.equal(12)
     defaults.failCallback.should.not.have.been.called
   })
 
-  it(`should block a user for ${defaults.timeBlocked}ms`, () => {
+  it(`should block a user for ${defaults.timeBlocked}ms`, async () => {
     for (let i = 0; i < defaults.tries; i += 1) {
-      middleware(req, res, next)
+      await middleware(req, res, next)
     }
     next.callCount.should.be.equal(10)
     clock.tick(defaults.timeBlocked - 1)
-    middleware(req, res, next)
+    await middleware(req, res, next)
     next.callCount.should.be.equal(10)
     defaults.failCallback.should.have.been.calledOnce
     clock.tick(1)
-    middleware(req, res, next)
+    await middleware(req, res, next)
     next.callCount.should.be.equal(11)
     defaults.failCallback.should.have.been.calledOnce
   })

@@ -6,7 +6,7 @@ function hash(value) {
 }
 
 export default function (store, options, key, extension) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const mergedOptions = { ...defaults, ...options }
     const {
       timeLimit,
@@ -17,14 +17,14 @@ export default function (store, options, key, extension) {
     } = mergedOptions
 
     const storeKey = `${prefix}${hash(key || req.ip)}`
-    const value = store.get(storeKey)
+    const value = await store.get(storeKey)
 
     if (extension) {
       extension(mergedOptions, value)
     }
 
     if (!value) {
-      store.set(storeKey, 1, timeLimit)
+      await store.set(storeKey, 1, timeLimit)
       next()
       return
     }
@@ -37,9 +37,9 @@ export default function (store, options, key, extension) {
     }
 
     if (nextCount === tries) {
-      store.set(storeKey, nextCount, timeBlocked)
+      await store.set(storeKey, nextCount, timeBlocked)
     } else {
-      store.set(storeKey, nextCount, timeLimit)
+      await store.set(storeKey, nextCount, timeLimit)
     }
     next()
   }
