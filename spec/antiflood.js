@@ -6,7 +6,7 @@ import antiflood, { MemoryStore } from '../src/main'
 import defaults from '../src/defaults'
 
 chai.use(sinonChai)
-const should = chai.should(); // eslint-disable-line
+const should = chai.should() // eslint-disable-line
 
 const randomInt = () => Math.floor(Math.random() * 100)
 

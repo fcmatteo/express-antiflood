@@ -61,7 +61,7 @@ export function MemoryStore() {
       if (localStore[key]) {
         clearTimeout(localStore[key].timeout)
       }
-      const nextDate = (new Date()).getTime() + expire;
+      const nextDate = (new Date()).getTime() + expire
       const timeout = setTimeout(() => { delete localStore[key] }, expire)
       localStore[key] = { count, timeout, nextDate }
     },

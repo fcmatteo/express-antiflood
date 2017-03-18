@@ -1,5 +1,5 @@
 function failCallbackDefault(req, res, next, nextValidRequestDate) {
-  res.status(429);
+  res.status(429)
   res.send({
     error: {
       text: 'Too many requests.',
