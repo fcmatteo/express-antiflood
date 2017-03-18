@@ -2,8 +2,21 @@ import 'babel-polyfill'
 import chai from 'chai'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
-import antiflood, { MemoryStore } from '../src/main'
-import defaults from '../src/defaults'
+
+let antiflood
+let MemoryStore
+let defaults
+try {
+  const main = require('../dist/main')
+  antiflood = main.default
+  MemoryStore = main.MemoryStore
+  defaults = require('../dist/defaults').default
+} catch (e) {
+  const main = require('../src/main')
+  antiflood = main.default
+  MemoryStore = main.MemoryStore
+  defaults = require('../src/defaults').default
+}
 
 chai.use(sinonChai)
 const should = chai.should() // eslint-disable-line
