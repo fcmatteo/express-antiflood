@@ -11,15 +11,17 @@ try {
   antiflood = main.default
   MemoryStore = main.MemoryStore
   defaults = require('../dist/defaults').default
+  console.log('Running tests with production files\n\n')
 } catch (e) {
   const main = require('../src/main')
   antiflood = main.default
   MemoryStore = main.MemoryStore
   defaults = require('../src/defaults').default
+  console.log('Running tests with development files')
 }
 
 chai.use(sinonChai)
-const should = chai.should() // eslint-disable-line
+const should = chai.should()
 
 const randomInt = () => Math.floor(Math.random() * 100)
 
