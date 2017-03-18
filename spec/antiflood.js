@@ -3,20 +3,16 @@ import chai from 'chai'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 
-let antiflood
-let MemoryStore
-let defaults
-try {
-  const main = require('../dist/main')
-  antiflood = main.default
-  MemoryStore = main.MemoryStore
-  defaults = require('../dist/defaults').default
-  console.log('Running tests with production files\n\n')
-} catch (e) {
-  const main = require('../src/main')
-  antiflood = main.default
-  MemoryStore = main.MemoryStore
-  defaults = require('../src/defaults').default
+const libDir = process.env.PROD ? 'dist' : 'src'
+
+const main = require(`../${libDir}/main`)
+const antiflood = main.default
+const MemoryStore = main.MemoryStore
+const defaults = require(`../${libDir}/defaults`).default
+
+if (process.env.PROD) {
+  console.log('Running tests with production files')
+} else {
   console.log('Running tests with development files')
 }
 
