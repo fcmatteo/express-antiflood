@@ -32,7 +32,7 @@ const mockRes = () => ({
 })
 
 describe('Antiflood middleware basic tests', () => {
-  const middleware = antiflood(MemoryStore())
+  let middleware
   let req
   let res
   let next
@@ -41,6 +41,7 @@ describe('Antiflood middleware basic tests', () => {
     res = mockRes()
     next = sinon.stub()
     defaults.failCallback = sinon.stub()
+    middleware = antiflood(MemoryStore())
   })
 
   it('should return a middleware', async () => {
@@ -50,7 +51,6 @@ describe('Antiflood middleware basic tests', () => {
   })
 
   it(`should block a user that does the request ${defaults.tries} times`, async () => {
-    defaults.failCallback = sinon.stub()
     for (let i = 0; i < defaults.tries; i += 1) {
       await middleware(req, res, next)
     }
@@ -63,7 +63,7 @@ describe('Antiflood middleware basic tests', () => {
 })
 
 describe('Antiflood middleware times', () => {
-  const middleware = antiflood(MemoryStore())
+  let middleware
   let req
   let res
   let next
@@ -74,6 +74,7 @@ describe('Antiflood middleware times', () => {
     next = sinon.stub()
     clock = sinon.useFakeTimers()
     defaults.failCallback = sinon.stub()
+    middleware = antiflood(MemoryStore())
   })
   afterEach(() => clock.restore())
 
