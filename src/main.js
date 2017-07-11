@@ -6,17 +6,17 @@ function hash(value) {
 }
 
 export default function (store, options = defaults, extension) {
-  return async (req, res, next) => {
-    const mergedOptions = { ...defaults, ...options }
-    const {
-      timeLimit,
-      timeBlocked,
-      tries,
-      prefix,
-      failCallback,
-      key,
-    } = mergedOptions
+  const mergedOptions = { ...defaults, ...options }
+  const {
+    timeLimit,
+    timeBlocked,
+    tries,
+    prefix,
+    failCallback,
+    key,
+  } = mergedOptions
 
+  return async (req, res, next) => {
     const storeKey = `${prefix}${hash(key || req.ip)}`
     const value = await store.get(storeKey)
 
