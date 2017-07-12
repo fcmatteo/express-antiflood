@@ -28,9 +28,12 @@ export default function (store, options, extensions = []) {
     getKey,
   } = mergedOptions
 
-  const success = async (key, nextCount) => {
-    await store.set(key, nextCount, timeLimit)
-    hub.emit(SUCCESS, { key })
+  const done = async (key, status, nextCount) => {
+    if (status !== BLOCKED) {
+      const time = status === SUCCESS ? timeLimit : timeBlocked
+      await store.set(key, nextCount, time)
+    }
+    hub.emit(status, { key })
   }
 
   return async (req, res, next) => {
@@ -39,7 +42,7 @@ export default function (store, options, extensions = []) {
     const value = await store.get(storeKey)
 
     if (!value) {
-      await success(storeKey, 1)
+      await done(storeKey, SUCCESS, 1)
       next()
       return
     }
@@ -47,17 +50,17 @@ export default function (store, options, extensions = []) {
     const nextCount = value.count + 1
 
     if (value.count >= tries) {
+      done(storeKey, BLOCKED)
       failCallback(req, res, next, nextValidRequestDate)
-      hub.emit(BLOCKED, { key: storeKey })
       return
     }
 
     if (nextCount === tries) {
-      await store.set(storeKey, nextCount, timeBlocked)
-      hub.emit(LIMIT_REACHED, { storeKey: key })
-    } else {
-      await success(storeKey, nextCount)
+      await done(storeKey, LIMIT_REACHED, nextCount)
+      next()
+      return
     }
+    await done(storeKey, SUCCESS, nextCount)
     next()
   }
 }

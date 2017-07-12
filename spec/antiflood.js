@@ -170,12 +170,12 @@ describe('Extensions', () => {
     res = mockRes()
     next = sinon.stub()
     defaults.failCallback = sinon.stub()
-    successFn1 = sinon.stub()
-    successFn2 = sinon.stub()
-    limitFn1 = sinon.stub()
-    limitFn2 = sinon.stub()
-    blockedFn1 = sinon.stub()
-    blockedFn2 = sinon.stub()
+    successFn1 = sinon.spy()
+    successFn2 = sinon.spy()
+    limitFn1 = sinon.spy()
+    limitFn2 = sinon.spy()
+    blockedFn1 = sinon.spy()
+    blockedFn2 = sinon.spy()
     extension1 = generateExtension(successFn1, limitFn1, blockedFn1)
     extension2 = generateExtension(successFn2, limitFn2, blockedFn2)
   })
@@ -198,6 +198,17 @@ describe('Extensions', () => {
     limitFn2.should.have.not.been.called
     blockedFn1.should.have.not.been.called
     blockedFn2.should.have.not.been.called
+  })
+
+  it('should pass an object with a key named `key` to the listeners', async () => {
+    const middleware = antiflood(MemoryStore(), {}, extension1)
+    await middleware(req, res, next)
+    for (let i = 0; i < defaults.tries; i += 1) {
+      await middleware(req, res, next)
+    }
+    successFn1.should.have.calledWith(sinon.match.has('key'))
+    limitFn1.should.have.calledWith(sinon.match.has('key'))
+    blockedFn1.should.have.calledWith(sinon.match.has('key'))
   })
 
   it('should be listened by each extension for all the events', async () => {
