@@ -1,11 +1,23 @@
 import crypto from 'crypto'
+import EventEmitter from 'events'
 import defaults from './defaults'
+import {
+  SUCCESS,
+  LIMIT_REACHED,
+  BLOCKED,
+} from './events'
 
 function hash(value) {
   return crypto.createHash('sha256').update(String(value)).digest('base64')
 }
 
-export default function (store, options = defaults, extension) {
+export default function (store, options, extensions = []) {
+  const hub = new EventEmitter()
+  if (typeof extensions === 'function') {
+    extensions(hub.on.bind(hub))
+  } else {
+    extensions.forEach(ext => ext(hub.on.bind(hub)))
+  }
   const mergedOptions = { ...defaults, ...options }
   const {
     timeLimit,
@@ -13,19 +25,21 @@ export default function (store, options = defaults, extension) {
     tries,
     prefix,
     failCallback,
-    key,
+    getKey,
   } = mergedOptions
 
+  const success = async (key, nextCount) => {
+    await store.set(key, nextCount, timeLimit)
+    hub.emit(SUCCESS, { key })
+  }
+
   return async (req, res, next) => {
-    const storeKey = `${prefix}${hash(key || req.ip)}`
+    const key = typeof getKey === 'function' ? await getKey(req) : req.ip
+    const storeKey = `${prefix}${hash(key)}`
     const value = await store.get(storeKey)
 
-    if (extension) {
-      extension(mergedOptions, value)
-    }
-
     if (!value) {
-      await store.set(storeKey, 1, timeLimit)
+      await success(storeKey, 1)
       next()
       return
     }
@@ -34,13 +48,15 @@ export default function (store, options = defaults, extension) {
 
     if (value.count >= tries) {
       failCallback(req, res, next, nextValidRequestDate)
+      hub.emit(BLOCKED, { key: storeKey })
       return
     }
 
     if (nextCount === tries) {
       await store.set(storeKey, nextCount, timeBlocked)
+      hub.emit(LIMIT_REACHED, { storeKey: key })
     } else {
-      await store.set(storeKey, nextCount, timeLimit)
+      await success(storeKey, nextCount)
     }
     next()
   }
