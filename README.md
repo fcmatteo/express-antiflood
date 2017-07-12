@@ -13,15 +13,17 @@ import express from 'express'
 import antiflood, { MemoryStore } from 'express-antiflood'
 
 const app = express()
-const middleware = antiflood(MemoryStore, {
+const middleware = antiflood(MemoryStore(), {
     tries: 3,
     timeLimit: 30000,
     timeBlocked: 60000 * 10,
 })
 
 app.post('/comment', middleware, function (req, res) {
-  res.send('Hello World!');
-});
+  res.send('Hello World!')
+})
+
+app.listen(3000)
 ```
 
 # Options
